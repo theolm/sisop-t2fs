@@ -1,6 +1,8 @@
 # T2FS
 Segundo trabalho da disciplina de Sistemas operacionais da UFRGS 2019/1.
 
+## DEADLINE: 20/06/2019
+
 ## TODO
 - [ ] Alocação do espaço em disco: FAT
 - [ ] Gerência de espaço livre: Bitmap
