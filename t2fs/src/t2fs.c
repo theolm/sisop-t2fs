@@ -1,13 +1,24 @@
 
 /**
 */
-#include "t2fs.h"
+#include <string.h>
+#include "../include/apidisk.h"
+#include "../include/t2fs.h"
+#define SECTOR_SIZE 256
 
 /*-----------------------------------------------------------------------------
 Função:	Informa a identificação dos desenvolvedores do T2FS.
 -----------------------------------------------------------------------------*/
 int identify2 (char *name, int size) {
-	return -1;
+    char members[] = "Theodoro Loureiro Mota - 173230\nRui Cardozo - 120211\nFabio Petkowicz - 118627";
+    int members_size = sizeof(members) / sizeof(members[0]);
+
+    if (size < members_size) {
+        return -1;
+    } else {
+        strncpy(name, members, size);
+        return 0;
+    }
 }
 
 /*-----------------------------------------------------------------------------
@@ -108,6 +119,8 @@ int chdir2 (char *pathname) {
 Função:	Função usada para obter o caminho do diretório corrente.
 -----------------------------------------------------------------------------*/
 int getcwd2 (char *pathname, int size) {
+    unsigned char buffer[SECTOR_SIZE];
+    return read_sector(0, buffer);
 	return -1;
 }
 
@@ -140,5 +153,6 @@ Função:	Função usada para criar um caminho alternativo (softlink) com
 int ln2 (char *linkname, char *filename) {
 	return -1;
 }
+
 
 
