@@ -1,9 +1,7 @@
-
-/**
-*/
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "../include/apidisk.h"
 #include "../include/t2fs.h"
 #define SECTOR_SIZE 256
@@ -15,7 +13,7 @@ int numeroSetores;
 int numeroBlocos;
 int tamanhoBitmap;
 int numeroBlocosBitmap;
-int mapaEspaco[];
+BYTE *mapaEspaco;
 Mbr mbr;
 
 char *converteByteParaHex(BYTE valor) {
@@ -43,6 +41,28 @@ void substring(char s[], char sub[], int p, int l) {
    sub[c] = '\0';
 }
 
+BYTE *converteByteParaBin(BYTE b) {
+	BYTE *bits = malloc(sizeof(BYTE) * 8);
+
+	int i;
+	for (i = 0; i < 8; i++) {
+		bits[7 - i] = (b >> i) & 1;
+	}
+
+	return bits;
+}
+
+int converteBinParaByte(BYTE *b) {
+	int res = 0;
+	int i;
+
+	for (i = 0; i < 8; i++) {
+		res += 2 ^ i * b[7 - i];
+	}
+
+	return res;
+}
+
 void montaMbr() {
 	BYTE buffer[SECTOR_SIZE];
 	read_sector(0, buffer);
@@ -57,9 +77,9 @@ void montaMbr() {
 	int semestre = converteHexParaInt(e);
 
 	mbr.versaoDisco = strcat(byteToStr(ano), byteToStr(semestre));
-	mbr.tamanhoSetor = buffer[3] * 256 + buffer[2];
-	mbr.inicioTabelaParticoes = buffer[5] * 256 + buffer[4];
-	mbr.qteParticoes = buffer[7] * 256 + buffer[6];
+	mbr.tamanhoSetor = buffer[3] * SECTOR_SIZE + buffer[2];
+	mbr.inicioTabelaParticoes = buffer[5] * SECTOR_SIZE + buffer[4];
+	mbr.qteParticoes = buffer[7] * SECTOR_SIZE + buffer[6];
 	mbr.arrayParticoes = malloc(sizeof(Particao) * mbr.qteParticoes);
 
 	int deslocamento = mbr.inicioTabelaParticoes;
@@ -93,6 +113,59 @@ void imprimeMbr() {
 
 }
 
+int getSetorDoBloco(int numBloco) {
+	return mbr.arrayParticoes[particao].setorInicial + numBloco * setoresPorBloco;
+}
+
+void salvaBloco(int numBloco, BYTE *bufferBloco) {
+	int i;
+	int setor;
+	for (setor = 0; setor < setoresPorBloco; setor++) {
+		BYTE bufferSetor[SECTOR_SIZE];
+		for (i = 0; i < SECTOR_SIZE; i++) {
+			bufferSetor[i] = bufferBloco[setor * SECTOR_SIZE + i];
+		}
+		int setorFisico = getSetorDoBloco(numBloco) + setor;
+		write_sector(setorFisico, bufferSetor);
+	}
+}
+
+int getBlocoLivreDoByte(BYTE *b) {
+	int i = 0;
+	int res = -1;
+	int achei = 0;
+	while (i < 8 && achei == 0) {
+		if (b[i] == 0) {
+			achei = 1;
+			res = i;
+		} else {
+			i++;
+		}
+	}
+	return res;
+}
+
+
+int getBlocoLivreDoBitmap() {
+	int b = -1;
+	int i = 0;
+	int bloco = -1;
+
+	do{
+		b = mapaEspaco[i];
+	} while (b == -1 && ++i < tamanhoBitmap);
+
+	if (b != -1) {
+		BYTE *bin = malloc(sizeof(BYTE) * 8);
+		bin = converteByteParaBin(b);		bloco  = getBlocoLivreDoByte(bin);
+		bin[bloco] = 1;
+		mapaEspaco[i] = converteBinParaByte(bin);
+		bloco += 8 * i;
+	}
+
+	return bloco;
+}
+
 /*-----------------------------------------------------------------------------
 Função:	Informa a identificação dos desenvolvedores do T2FS.
 -----------------------------------------------------------------------------*/
@@ -115,8 +188,35 @@ Função:	Formata logicamente o disco virtual t2fs_disk.dat para o sistema de
 -----------------------------------------------------------------------------*/
 int format2 (int sectors_per_block) {
 	setoresPorBloco = sectors_per_block;
+	Particao p = mbr.arrayParticoes[particao];
+	numeroSetores = p.setorFinal - p.setorInicial;
+	numeroBlocos = numeroSetores / setoresPorBloco;
 
-	return -1;
+	mapaEspaco = malloc(sizeof(BYTE) * ceil(tamanhoBitmap / setoresPorBloco * SECTOR_SIZE));
+
+	BYTE buffer[setoresPorBloco * SECTOR_SIZE];
+
+	int i;
+	for (i = 0; i < setoresPorBloco * SECTOR_SIZE; i++) {
+		buffer[i] = 0;
+	}
+
+	for (i = 0; i < numeroBlocosBitmap; i++) {
+		salvaBloco(1 + i, buffer);
+	}
+
+	buffer[0] = (BYTE) (setoresPorBloco << 24 & 0xFF);
+	buffer[1] = (BYTE) (setoresPorBloco << 16 & 0xFF);
+	buffer[2] = (BYTE) (setoresPorBloco << 8 & 0xFF);
+	buffer[3] = (BYTE) (setoresPorBloco & 0xFF);
+
+	salvaBloco(0, buffer);
+
+	for (i = 0; i < 1 + numeroBlocosBitmap; i++) {
+		//getBlocoLivreDoBitmap();
+	}
+
+	return 0;
 }
 
 /*-----------------------------------------------------------------------------
