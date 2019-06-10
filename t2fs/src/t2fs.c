@@ -157,7 +157,8 @@ int getBlocoLivreDoBitmap() {
 
 	if (b != -1) {
 		BYTE *bin = malloc(sizeof(BYTE) * 8);
-		bin = converteByteParaBin(b);		bloco  = getBlocoLivreDoByte(bin);
+		bin = converteByteParaBin(b);
+		bloco  = getBlocoLivreDoByte(bin);
 		bin[bloco] = 1;
 		mapaEspaco[i] = converteBinParaByte(bin);
 		bloco += 8 * i;
@@ -342,6 +343,3 @@ Função:	Função usada para criar um caminho alternativo (softlink) com
 int ln2 (char *linkname, char *filename) {
 	return -1;
 }
-
-
-
