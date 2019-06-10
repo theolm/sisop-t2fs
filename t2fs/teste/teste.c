@@ -17,7 +17,9 @@ int main() {
         printf("cidentify erro!\n\n");
     }
 
-    int testeApiDisk = getcwd2(members, 0);
-    printf("\ntesteApiDisk: %d\n", testeApiDisk);
+    montaMbr();
+    imprimeMbr();
+
+    return 0;
 
 }

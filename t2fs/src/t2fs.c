@@ -2,9 +2,96 @@
 /**
 */
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "../include/apidisk.h"
 #include "../include/t2fs.h"
 #define SECTOR_SIZE 256
+
+
+int particao = 0; // Partição selecionada - primeira por definição do T2
+int setoresPorBloco;
+int numeroSetores;
+int numeroBlocos;
+int tamanhoBitmap;
+int numeroBlocosBitmap;
+int mapaEspaco[];
+Mbr mbr;
+
+char *converteByteParaHex(BYTE valor) {
+	char *hex = malloc(sizeof(char));
+	sprintf(hex, "%x", valor);
+	return hex;
+}
+
+int converteHexParaInt(char *hex) {
+	return (int)strtol(hex, NULL, 16);
+}
+
+char *byteToStr(int i) {
+	char *s = malloc(sizeof(char));
+	sprintf(s, "%1d", i);
+	return s;
+}
+
+void substring(char s[], char sub[], int p, int l) {
+   int c = 0;
+   while (c < l) {
+      sub[c] = s[p+c-1];
+      c++;
+   }
+   sub[c] = '\0';
+}
+
+void montaMbr() {
+	BYTE buffer[SECTOR_SIZE];
+	read_sector(0, buffer);
+	char *s = strcat(converteByteParaHex(buffer[1]), converteByteParaHex(buffer[0]));
+	char c[strlen(s)];
+	strcpy(c, s);
+	char d[3];
+	substring(c, d, 1, 3);
+	int ano = converteHexParaInt(d);
+	char e[3];
+	substring(c, e, 4, 1);
+	int semestre = converteHexParaInt(e);
+
+	mbr.versaoDisco = strcat(byteToStr(ano), byteToStr(semestre));
+	mbr.tamanhoSetor = buffer[3] * 256 + buffer[2];
+	mbr.inicioTabelaParticoes = buffer[5] * 256 + buffer[4];
+	mbr.qteParticoes = buffer[7] * 256 + buffer[6];
+	mbr.arrayParticoes = malloc(sizeof(Particao) * mbr.qteParticoes);
+
+	int deslocamento = mbr.inicioTabelaParticoes;
+	int i;
+	for (i = 0; i < mbr.qteParticoes; i++) {
+		Particao particao;
+		particao.setorInicial = buffer[deslocamento + 1] * 256 + buffer[deslocamento] + buffer[deslocamento + 3] * 16777216 + buffer[deslocamento + 2] * 65536;
+		deslocamento += 4;
+		particao.setorFinal = buffer[deslocamento + 1] * 256 + buffer[deslocamento]	+ buffer[deslocamento + 3] * 16777216 + buffer[deslocamento + 2] * 65536;
+		deslocamento += 4;
+		memcpy(particao.nome, buffer + deslocamento, 24);
+		mbr.arrayParticoes[i] = particao;
+		deslocamento += 24;
+	}
+}
+
+void imprimeMbr() {
+	printf("Disco Formatado LSF\n");
+	printf("Versão: %s\n", mbr.versaoDisco);
+	printf("Tamanho do setor: %d\n", mbr.tamanhoSetor);
+	printf("Byte inicio da tabela de partições: %d\n", mbr.inicioTabelaParticoes);
+	printf("Quantidade de partições: %d\n", mbr.qteParticoes);
+	int i;
+	for (i = 0; i < mbr.qteParticoes; i++) {
+		Particao particao = mbr.arrayParticoes[i];
+		printf("---Partição #%d-------------------\n", i);
+		printf("Nome: %s\n", particao.nome);
+		printf("Setor inicial: %d\n", particao.setorInicial);
+		printf("Setor final: %d\n", particao.setorFinal);
+	}
+
+}
 
 /*-----------------------------------------------------------------------------
 Função:	Informa a identificação dos desenvolvedores do T2FS.
@@ -27,6 +114,8 @@ Função:	Formata logicamente o disco virtual t2fs_disk.dat para o sistema de
 		corresponde a um múltiplo de setores dados por sectors_per_block.
 -----------------------------------------------------------------------------*/
 int format2 (int sectors_per_block) {
+	setoresPorBloco = sectors_per_block;
+
 	return -1;
 }
 
