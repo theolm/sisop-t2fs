@@ -3,6 +3,7 @@
 //
 
 #include "../include/t2fs.h"
+#include "../include/libaux.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -17,9 +18,7 @@ int main() {
         printf("cidentify erro!\n\n");
     }
 
-    montaMbr();
-    imprimeMbr();
-
+    exemploDeFunc();
     return 0;
 
 }
