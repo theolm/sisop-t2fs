@@ -18,5 +18,9 @@ int main() {
         printf("cidentify erro!\n\n");
     }
 
+    printf("\n***TESTE FORMAT********************\n\n");
+    int i = format2(4);
+    printf("\n***RESULTADO DO FORMAT: %s **********\n", i == 0 ? "OK" : "ERRO");
+
     return 0;
 }

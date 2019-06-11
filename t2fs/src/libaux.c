@@ -68,6 +68,7 @@ void montaMbr(Mbr *mbr) {
     int semestre = converteHexParaInt(e);
 
     mbr->versaoDisco = strcat(byteToStr(ano), byteToStr(semestre));
+    mbr->particao = 0;
     mbr->tamanhoSetor = buffer[3] * SECTOR_SIZE + buffer[2];
     mbr->inicioTabelaParticoes = buffer[5] * SECTOR_SIZE + buffer[4];
     mbr->qteParticoes = buffer[7] * SECTOR_SIZE + buffer[6];
@@ -166,7 +167,6 @@ void formataParticao(int setoresPorBloco, Mbr *mbr) {
     montaMbr(mbr);
 	Particao p;
     mbr->setoresPorBloco = setoresPorBloco;
-    mbr->particao = 1;
 	p = mbr->arrayParticoes[mbr->particao];
     mbr->numeroSetores = p.setorFinal - p.setorInicial;
     mbr->numeroBlocos = mbr->numeroSetores / mbr->setoresPorBloco;
@@ -194,4 +194,6 @@ void formataParticao(int setoresPorBloco, Mbr *mbr) {
     for (i = 0; i < 1 + mbr->numeroBlocosBitmap; i++) {
         getBlocoLivreDoBitmap(mbr);
     }
+
+    imprimeMbr(mbr);
 }
