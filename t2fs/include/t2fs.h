@@ -3,7 +3,6 @@
 
 #define	SECTOR_SIZE	256
 
-
 #define	INVALID_PTR	-1
 
 typedef int FILE2;
@@ -26,25 +25,7 @@ typedef struct {
     DWORD bloco;					 /* Ponteiro para bloco de dados  */
 } DIRENT2;
 
-typedef struct {
-	int setorInicial;
-	int setorFinal;
-	char nome[TAMANHO_MAXIMO_NOME_PARTICAO];
-} Particao;
-
-typedef struct {
-	char *versaoDisco;
-	int tamanhoSetor;
-	int inicioTabelaParticoes;
-	int qteParticoes;
-	Particao *arrayParticoes;
-} Mbr;
-
-
-
-
 #pragma pack(pop)
-
 
 /*-----------------------------------------------------------------------------
 Fun��o: Usada para identificar os desenvolvedores do T2FS.

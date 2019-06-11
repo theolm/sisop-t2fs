@@ -18,7 +18,5 @@ int main() {
         printf("cidentify erro!\n\n");
     }
 
-    exemploDeFunc();
     return 0;
-
 }
