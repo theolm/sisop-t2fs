@@ -103,7 +103,6 @@ int seek2(FILE2 handle, DWORD offset) {
 Função:	Função usada para criar um novo diretório.
 -----------------------------------------------------------------------------*/
 int mkdir2(char *pathname) {
-    getBlocoLivreDoBitmap();
     return -1;
 }
 

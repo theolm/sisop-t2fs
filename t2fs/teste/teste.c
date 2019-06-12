@@ -1,7 +1,3 @@
-//
-// Created by theo on 29/05/19.
-//
-
 #include "../include/t2fs.h"
 #include "../include/libaux.h"
 #include <stdio.h>
@@ -18,9 +14,10 @@ int main() {
         printf("cidentify erro!\n\n");
     }
 
+    int resultado;
     printf("\n***TESTE FORMAT********************\n\n");
-    int i = format2(4);
-    printf("\n***RESULTADO DO FORMAT: %s **********\n", i == 0 ? "OK" : "ERRO");
+    resultado = format2(4);
+    printf("\n***RESULTADO DO FORMAT: %s **********\n", resultado == 0 ? "OK" : "ERRO");
 
     return 0;
 }
