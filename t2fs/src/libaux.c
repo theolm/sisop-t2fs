@@ -147,7 +147,6 @@ void imprimeMbr(Mbr *mbr) {
 		printf("Setor inicial: %d\n", particao.setorInicial);
 		printf("Setor final: %d\n", particao.setorFinal);
 	}
-
 }
 
 int getSetorDoBloco(int numBloco, Mbr *mbr) {

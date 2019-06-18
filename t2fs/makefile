@@ -13,7 +13,7 @@ LIB_DIR=./lib
 INC_DIR=./include
 BIN_DIR=./bin
 SRC_DIR=./src
-TARGETS= ./lib/ot2fs.o ./lib/libaux.o ./lib/libt2fs.a
+TARGETS=./lib/ot2fs.o ./lib/libaux.o ./lib/libt2fs.a
 CFLAGS = -Wall -m32
 
 all: libaux ot2fs libt2fs teste
