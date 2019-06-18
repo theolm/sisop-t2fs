@@ -7,6 +7,13 @@ typedef struct {
 } Particao;
 
 typedef struct {
+	int handler;
+	char nome[16384];
+	int tipo;
+	int cp;
+} Arquivo;
+
+typedef struct {
 	char *versaoDisco;
 	int tamanhoSetor;
 	int inicioTabelaParticoes;
@@ -19,6 +26,8 @@ typedef struct {
 	int tamanhoBitmap;
 	int numeroBlocosBitmap;
 	BYTE *mapaEspaco;
+	Arquivo taad[4096];
+	int indiceHandler;
 } Mbr;
 
 void formataParticao(int setoresPorBloco, Mbr *mbr);

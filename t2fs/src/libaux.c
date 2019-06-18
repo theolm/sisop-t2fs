@@ -130,6 +130,7 @@ void montaMbr(Mbr *mbr) {
 		mbr->arrayParticoes[i] = particao;
 		deslocamento += 24;
 	}
+	mbr->indiceHandler = 0;
 }
 
 void imprimeMbr(Mbr *mbr) {
@@ -327,3 +328,31 @@ int existeEntradaDiretorio(char *fileName, Mbr *mbr) {
 	free(arrayPastas);
 	return dirEnt.bloco != -1 ? 0 : -1;
 }
+
+int adicionaArquivoNoTAAD(char* fileName, int tipo, Mbr *mbr) {
+	Arquivo arquivo;
+	strcpy(arquivo.nome, fileName);
+	arquivo.cp = 0;
+	arquivo.tipo = tipo;
+	while (mbr->taad[mbr->indiceHandler].nome[0] != 0) {
+		mbr->indiceHandler++;
+		if (mbr->indiceHandler > 4096) {
+			mbr->indiceHandler = 0;
+		}
+	}
+	arquivo.handler = mbr->indiceHandler;
+	mbr->taad[mbr->indiceHandler] = arquivo;
+	return mbr->indiceHandler;
+}
+
+int removeArquivoDoTAAD(int handler, Mbr *mbr) {
+	int result = -1;
+	if (mbr->taad[handler].nome[0] != 0) {
+		strcpy(mbr->taad[handler].nome, "");
+		mbr->taad[handler].cp = 0;
+		mbr->taad[handler].handler = 0;
+		mbr->taad[handler].tipo = 0;
+	}
+	return result;
+}
+
