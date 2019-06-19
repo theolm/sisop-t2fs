@@ -8,7 +8,7 @@ typedef struct {
 
 typedef struct {
 	int handler;
-	char nome[16384];
+	DIRENT2 dirEnt;
 	int tipo;
 	int cp;
 } Arquivo;
@@ -31,7 +31,7 @@ typedef struct {
 } Mbr;
 
 void formataParticao(int setoresPorBloco, Mbr *mbr);
-int existeEntradaDiretorio(char *fileName, Mbr *mbr);
+int existeEntradaDiretorio(char *fileName, DIRENT2 dirEnt, Mbr *mbr);
 int criaEntradaDiretorio(char *fileName, int tipo, Mbr *mbr);
-int adicionaArquivoNoTAAD(char *fileName, int tipo, Mbr *mbr);
+int adicionaArquivoNoTAAD(DIRENT2 dirEnt, int tipo, Mbr *mbr);
 int removeArquivoDoTAAD(int handler, Mbr *mbr);

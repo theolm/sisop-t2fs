@@ -44,7 +44,8 @@ Função:	Função usada para criar um novo arquivo no disco e abrí-lo,
 -----------------------------------------------------------------------------*/
 FILE2 create2(char *filename) {
     FILE2 handle = -1;
-    if (!existeEntradaDiretorio(filename, &mbr)) {
+    DIRENT2 dirEnt;
+    if (!existeEntradaDiretorio(filename, dirEnt, &mbr)) {
     	handle = criaEntradaDiretorio(filename, 2, &mbr);
     }
     return handle;
@@ -62,8 +63,9 @@ Função:	Função que abre um arquivo existente no disco.
 -----------------------------------------------------------------------------*/
 FILE2 open2(char *filename) {
 	FILE2 handle = -1;
-	if (existeEntradaDiretorio(filename, &mbr)) {
-		handle = adicionaArquivoNoTAAD(filename, 1, &mbr);
+	DIRENT2 dirEnt;
+	if (existeEntradaDiretorio(filename, dirEnt, &mbr)) {
+		handle = adicionaArquivoNoTAAD(dirEnt, 1, &mbr);
 	}
 	return handle;
 }
@@ -112,7 +114,8 @@ Função:	Função usada para criar um novo diretório.
 -----------------------------------------------------------------------------*/
 int mkdir2(char *pathname) {
     FILE2 result = -1;
-    if (!existeEntradaDiretorio(pathname, &mbr)) {
+    DIRENT2 dirEnt;
+    if (!existeEntradaDiretorio(pathname, dirEnt, &mbr)) {
     	criaEntradaDiretorio(pathname, 1, &mbr);
     }
     return result;

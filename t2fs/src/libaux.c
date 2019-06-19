@@ -414,9 +414,8 @@ DIRENT2 getEntradaDiretorio(int blocoDiretorio, char *fileName, Mbr *mbr) {
 	return dirEntResult;
 }
 
-int existeEntradaDiretorio(char *fileName, Mbr *mbr) {
+int existeEntradaDiretorio(char *fileName, DIRENT2 dirEnt, Mbr *mbr) {
 	int result = 1;
-	DIRENT2 dirEnt;
 	char arquivo[strlen(fileName)];
 	strcpy(arquivo, fileName);
 	char** arrayPastas = split(arquivo, '/');
@@ -433,12 +432,12 @@ int existeEntradaDiretorio(char *fileName, Mbr *mbr) {
 	return result;
 }
 
-int adicionaArquivoNoTAAD(char *fileName, int tipo, Mbr *mbr) {
+int adicionaArquivoNoTAAD(DIRENT2 dirEnt, int tipo, Mbr *mbr) {
 	Arquivo arquivo;
-	strcpy(arquivo.nome, fileName);
+	arquivo.dirEnt = dirEnt;
 	arquivo.cp = 0;
 	arquivo.tipo = tipo;
-	while (mbr->taad[mbr->indiceHandler].nome[0] != 0) {
+	while (mbr->taad[mbr->indiceHandler].tipo != 0) {
 		mbr->indiceHandler++;
 		if (mbr->indiceHandler > 4096) {
 			mbr->indiceHandler = 0;
@@ -451,10 +450,7 @@ int adicionaArquivoNoTAAD(char *fileName, int tipo, Mbr *mbr) {
 
 int removeArquivoDoTAAD(int handler, Mbr *mbr) {
 	int result = -1;
-	if (mbr->taad[handler].nome[0] != 0) {
-		strcpy(mbr->taad[handler].nome, "");
-		mbr->taad[handler].cp = 0;
-		mbr->taad[handler].handler = 0;
+	if (mbr->taad[handler].tipo != 0) {
 		mbr->taad[handler].tipo = 0;
 	}
 	return result;
@@ -661,9 +657,9 @@ int criaEntradaDiretorio(char *fileName, int tipo, Mbr *mbr) {
 	strcpy(arquivo, fileName);
 	char **arrayPastas = split(arquivo, '/');
 
-	criaEntradaDiretorioEfetivo(arrayPastas, tipo, mbr);
+	DIRENT2 dirEnt = criaEntradaDiretorioEfetivo(arrayPastas, tipo, mbr);
 
-	return adicionaArquivoNoTAAD(fileName, tipo, mbr);
+	return adicionaArquivoNoTAAD(dirEnt, tipo, mbr);
 }
 
 
