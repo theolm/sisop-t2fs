@@ -33,3 +33,5 @@ typedef struct {
 void formataParticao(int setoresPorBloco, Mbr *mbr);
 int existeEntradaDiretorio(char *fileName, Mbr *mbr);
 int criaEntradaDiretorio(char *fileName, int tipo, Mbr *mbr);
+int adicionaArquivoNoTAAD(char *fileName, int tipo, Mbr *mbr);
+int removeArquivoDoTAAD(int handler, Mbr *mbr);

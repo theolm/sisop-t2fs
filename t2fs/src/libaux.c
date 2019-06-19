@@ -7,17 +7,6 @@
 
 #define SECTOR_SIZE 256
 
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY(byte)  \
-  (byte & 0x80 ? '1' : '0'), \
-  (byte & 0x40 ? '1' : '0'), \
-  (byte & 0x20 ? '1' : '0'), \
-  (byte & 0x10 ? '1' : '0'), \
-  (byte & 0x08 ? '1' : '0'), \
-  (byte & 0x04 ? '1' : '0'), \
-  (byte & 0x02 ? '1' : '0'), \
-  (byte & 0x01 ? '1' : '0')
-
 char *converteByteParaHex(BYTE valor) {
 	char *hex = malloc(sizeof(char));
 	sprintf(hex, "%x", valor);
@@ -220,7 +209,7 @@ void commitaMapaBloco(Mbr *mbr) {
 	for (j = 0; j < mbr->numeroBlocosBitmap; j++) {
 		BYTE buffer[tamanhoBloco];
 		for (int i = 0; i < tamanhoBloco; i++) {
-			buffer[i] = i < mbr->tamanhoBitmap ? mbr->mapaEspaco[j + SECTOR_SIZE + i] : 0;
+			buffer[i] = i < mbr->tamanhoBitmap ? mbr->mapaEspaco[j * SECTOR_SIZE + i] : 0;
 		}
 		salvaBloco(j + 1, buffer, mbr);
 	}
@@ -231,7 +220,7 @@ void imprimeBitmap(Mbr *mbr) {
 	int i;
 	for (i = 0; i < mbr->tamanhoBitmap; i++) {
 		b = mbr->mapaEspaco[i];
-		printf("  "BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(b));
+
 	}
 }
 
@@ -282,7 +271,9 @@ void formataParticao(int setoresPorBloco, Mbr *mbr) {
 	mbr->numeroSetores = p.setorFinal - p.setorInicial;
 	mbr->numeroBlocos = mbr->numeroSetores / mbr->setoresPorBloco;
 
-	mbr->mapaEspaco = malloc(sizeof(BYTE) * ceil2(mbr->tamanhoBitmap / mbr->setoresPorBloco* SECTOR_SIZE));
+	mbr->tamanhoBitmap = ceil2(mbr->numeroBlocos / (float) 8);
+	mbr->mapaEspaco = malloc(sizeof(BYTE) * mbr->tamanhoBitmap);
+	mbr->numeroBlocosBitmap = ceil2(mbr->tamanhoBitmap / (mbr->setoresPorBloco * (float) SECTOR_SIZE));
 
 	BYTE buffer[setoresPorBloco * SECTOR_SIZE];
 
@@ -361,8 +352,12 @@ void desmontaDirEnt(DIRENT2 dirEnt, BYTE *byteDirEnt) {
 	byteDirEnt[0] = dirEnt.fileType;
 
 	int i;
+	int fim = 0;
 	for (i = 0; i < 31; i++) {
-		byteDirEnt[i + 1] = dirEnt.name[i];
+		if (dirEnt.name[i] == 0) {
+			fim = 1;
+		}
+		byteDirEnt[i + 1] = fim ? 0 : dirEnt.name[i];
 	}
 	byteDirEnt[32] = 0;
 
@@ -488,7 +483,7 @@ DIRENT2 localizaDirEnt(DIRENT2 *arrayDirEnt, char *nomeEntradaDiretorio, int ent
 	while (!achei && i < entradasDeDiretorio) {
 		DIRENT2 dirEntAux;
 		dirEntAux = arrayDirEnt[i];
-		if (dirEntAux.name[0] != 0 && strcmp(dirEntAux.name, nomeEntradaDiretorio)) {
+		if (dirEntAux.name[0] != 0 && strcmp(dirEntAux.name, nomeEntradaDiretorio) == 0) {
 			dirEnt = dirEntAux;
 			achei = 1;
 		} else {
@@ -498,7 +493,7 @@ DIRENT2 localizaDirEnt(DIRENT2 *arrayDirEnt, char *nomeEntradaDiretorio, int ent
 	return dirEnt;
 }
 
-int buscaDirEnt(DIRENT2 dirEnt, int bloco, char *s, BYTE *bufferBloco, Mbr *mbr, int tamanhoBloco) {
+int buscaDirEnt(DIRENT2 *dirEnt, int bloco, char *s, BYTE *bufferBloco, Mbr *mbr, int tamanhoBloco) {
 	int entradasDeDiretorios = (tamanhoBloco - 4) / 41;
 	int terminei = 0;
 	int proximoBloco;
@@ -509,10 +504,10 @@ int buscaDirEnt(DIRENT2 dirEnt, int bloco, char *s, BYTE *bufferBloco, Mbr *mbr,
 		DIRENT2 dirEntAux;
 		dirEntAux = localizaDirEnt(arrayDirEnt, s, entradasDeDiretorios);
 		if (dirEntAux.name[0] != 0) {
-			strcpy(dirEnt.name, dirEntAux.name);
-			dirEnt.fileType = dirEntAux.fileType;
-			dirEnt.fileSize = dirEntAux.fileSize;
-			dirEnt.bloco = dirEntAux.bloco;
+			strcpy(dirEnt->name, dirEntAux.name);
+			dirEnt->fileType = dirEntAux.fileType;
+			dirEnt->fileSize = dirEntAux.fileSize;
+			dirEnt->bloco = dirEntAux.bloco;
 			terminei = 1;
 		}
 		if (!terminei) {
@@ -636,8 +631,9 @@ DIRENT2 criaEntradaDiretorioEfetivo(char **arrayPastas, int tipo, Mbr *mbr) {
 		char *s = *(arrayPastas + i);
 
 		do {
+			dirEnt = inicializaDirEnt();
 			carregaBloco(bloco, bufferBloco, mbr);
-			proximoBloco = buscaDirEnt(dirEnt, bloco, s, bufferBloco, mbr, tamanhoBloco);
+			proximoBloco = buscaDirEnt(&dirEnt, bloco, s, bufferBloco, mbr, tamanhoBloco);
 		} while (dirEnt.name[0] == 0 && proximoBloco > 0);
 
 		if (dirEnt.name[0] == 0) {

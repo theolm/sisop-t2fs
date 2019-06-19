@@ -43,11 +43,11 @@ Função:	Função usada para criar um novo arquivo no disco e abrí-lo,
 		assumirá um tamanho de zero bytes.
 -----------------------------------------------------------------------------*/
 FILE2 create2(char *filename) {
-    FILE2 result = -1;
+    FILE2 handle = -1;
     if (!existeEntradaDiretorio(filename, &mbr)) {
-    	criaEntradaDiretorio(filename, 2, &mbr);
+    	handle = criaEntradaDiretorio(filename, 2, &mbr);
     }
-    return result;
+    return handle;
 }
 
 /*-----------------------------------------------------------------------------
@@ -61,7 +61,11 @@ int delete2(char *filename) {
 Função:	Função que abre um arquivo existente no disco.
 -----------------------------------------------------------------------------*/
 FILE2 open2(char *filename) {
-    return -1;
+	FILE2 handle = -1;
+	if (existeEntradaDiretorio(filename, &mbr)) {
+		handle = adicionaArquivoNoTAAD(filename, 1, &mbr);
+	}
+	return handle;
 }
 
 /*-----------------------------------------------------------------------------
@@ -107,7 +111,11 @@ int seek2(FILE2 handle, DWORD offset) {
 Função:	Função usada para criar um novo diretório.
 -----------------------------------------------------------------------------*/
 int mkdir2(char *pathname) {
-    return -1;
+    FILE2 result = -1;
+    if (!existeEntradaDiretorio(pathname, &mbr)) {
+    	criaEntradaDiretorio(pathname, 1, &mbr);
+    }
+    return result;
 }
 
 /*-----------------------------------------------------------------------------
@@ -128,8 +136,6 @@ int chdir2(char *pathname) {
 Função:	Função usada para obter o caminho do diretório corrente.
 -----------------------------------------------------------------------------*/
 int getcwd2(char *pathname, int size) {
-    unsigned char buffer[SECTOR_SIZE];
-    return read_sector(0, buffer);
     return -1;
 }
 
