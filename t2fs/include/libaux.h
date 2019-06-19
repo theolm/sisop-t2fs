@@ -31,3 +31,5 @@ typedef struct {
 } Mbr;
 
 void formataParticao(int setoresPorBloco, Mbr *mbr);
+int existeEntradaDiretorio(char *fileName, Mbr *mbr);
+int criaEntradaDiretorio(char *fileName, int tipo, Mbr *mbr);

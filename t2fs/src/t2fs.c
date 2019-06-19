@@ -43,7 +43,11 @@ Função:	Função usada para criar um novo arquivo no disco e abrí-lo,
 		assumirá um tamanho de zero bytes.
 -----------------------------------------------------------------------------*/
 FILE2 create2(char *filename) {
-    return -1;
+    FILE2 result = -1;
+    if (!existeEntradaDiretorio(filename, &mbr)) {
+    	criaEntradaDiretorio(filename, 2, &mbr);
+    }
+    return result;
 }
 
 /*-----------------------------------------------------------------------------
