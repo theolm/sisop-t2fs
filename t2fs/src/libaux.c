@@ -366,10 +366,10 @@ void desmontaDirEnt(DIRENT2 dirEnt, BYTE *byteDirEnt) {
 	byteDirEnt[35] = (BYTE) (dirEnt.fileSize << 8 & 0xFF);
 	byteDirEnt[36] = (BYTE) (dirEnt.fileSize & 0xFF);
 
-	byteDirEnt[37] = (BYTE) (dirEnt.fileType << 24 & 0xFF);
-	byteDirEnt[38] = (BYTE) (dirEnt.fileType << 16 & 0xFF);
-	byteDirEnt[39] = (BYTE) (dirEnt.fileType << 8 & 0xFF);
-	byteDirEnt[40] = (BYTE) (dirEnt.fileType & 0xFF);
+	byteDirEnt[37] = (BYTE) (dirEnt.bloco << 24 & 0xFF);
+	byteDirEnt[38] = (BYTE) (dirEnt.bloco << 16 & 0xFF);
+	byteDirEnt[39] = (BYTE) (dirEnt.bloco << 8 & 0xFF);
+	byteDirEnt[40] = (BYTE) (dirEnt.bloco & 0xFF);
 }
 
 DIRENT2 getEntradaDiretorio(int blocoDiretorio, char *fileName, Mbr *mbr) {
@@ -638,8 +638,8 @@ DIRENT2 criaEntradaDiretorioEfetivo(char **arrayPastas, int tipo, Mbr *mbr) {
 
 		if (dirEnt.name[0] == 0) {
 			strcpy(dirEnt.name, s);
-			dirEnt.fileType = i == tamanhoBloco - 1 ? tipo : 1;
-			dirEnt.bloco = i < tamanhoBloco - 1 ? getBlocoLivreDoBitmap(mbr) : 0;
+			dirEnt.fileType = *(arrayPastas + i + 1) ? tipo : 1;
+			dirEnt.bloco = *(arrayPastas + i + 1) ? getBlocoLivreDoBitmap(mbr) : 0;
 			dirEnt.fileSize = 0;
 			addEntradaDiretorio(dirEnt, s, bloco, mbr);
 			bloco = dirEnt.bloco;
