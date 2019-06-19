@@ -74,7 +74,7 @@ FILE2 open2(char *filename) {
 Função:	Função usada para fechar um arquivo.
 -----------------------------------------------------------------------------*/
 int close2(FILE2 handle) {
-    return -1;
+    return removeArquivoDoTAAD(handle, &mbr);
 }
 
 /*-----------------------------------------------------------------------------

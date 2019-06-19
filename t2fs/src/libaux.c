@@ -33,12 +33,10 @@ void substring(char s[], char sub[], int p, int l) {
 }
 
 void converteByteParaBin(BYTE b, BYTE *bits) {
-
 	int i;
 	for (i = 0; i < 8; i++) {
 		bits[7 - i] = (b >> i) & 1;
 	}
-
 }
 
 int pot(int x, int n) {
@@ -215,15 +213,6 @@ void commitaMapaBloco(Mbr *mbr) {
 	}
 }
 
-void imprimeBitmap(Mbr *mbr) {
-	BYTE b;
-	int i;
-	for (i = 0; i < mbr->tamanhoBitmap; i++) {
-		b = mbr->mapaEspaco[i];
-
-	}
-}
-
 int getBlocoLivreDoBitmap(Mbr *mbr) {
 	int b = -1;
 	int i = 0;
@@ -243,24 +232,19 @@ int getBlocoLivreDoBitmap(Mbr *mbr) {
 	}
 
 	commitaMapaBloco(mbr);
-	imprimeBitmap(mbr);
 	return bloco;
 }
 
 int ceil2(float f1){
-
    int n = (int) f1;
    float f2 = n;
    float dif = f1 - f2;
 
    if (dif > 0 ){
        n++;
-   } else if (dif < 0) {
-       n--;
    }
 
    return n;
-
 }
 
 void formataParticao(int setoresPorBloco, Mbr *mbr) {
@@ -662,5 +646,9 @@ int criaEntradaDiretorio(char *fileName, int tipo, Mbr *mbr) {
 	return adicionaArquivoNoTAAD(dirEnt, tipo, mbr);
 }
 
+int write(DIRENT2 dirEnt, BYTE *buffer, int size) {
 
+
+	return -1;
+}
 
