@@ -673,7 +673,7 @@ void apagaCadeiaDeBlocos(int bloco, Mbr *mbr) {
 
 }
 
-int escreveBlocos(DIRENT2 dirEnt, char *buffer, int size, Mbr *mbr) {
+int escreveBlocos(DIRENT2 dirEnt, char *buffer, int size, FILE2 handle, Mbr *mbr) {
 	int result;
 	if (dirEnt.fileType == 2) {
 		if (dirEnt.bloco != 0) {
@@ -682,6 +682,10 @@ int escreveBlocos(DIRENT2 dirEnt, char *buffer, int size, Mbr *mbr) {
 		dirEnt.bloco = getBlocoLivreDoBitmap(mbr);
 		dirEnt.fileSize = size;
 		setEntradaDiretorio(dirEnt, dirEnt.name, dirEnt.pai, mbr);
+		mbr->taad[handle].dirEnt.bloco = dirEnt.bloco;
+		mbr->taad[handle].dirEnt.fileSize = dirEnt.fileSize;
+		mbr->taad[handle].dirEnt.fileType = dirEnt.fileType;
+		strcpy(mbr->taad[handle].dirEnt.name, dirEnt.name);
 		int novoBloco = 0;
 		int bloco = dirEnt.bloco;
 		int tamanhoBloco = getTamanhoBloco(mbr);
@@ -709,6 +713,7 @@ int escreveBlocos(DIRENT2 dirEnt, char *buffer, int size, Mbr *mbr) {
 }
 
 int leBlocos(DIRENT2 dirEnt, char *buffer, int size, Mbr *mbr) {
+	int result;
 	if (dirEnt.fileType == 2) {
 		int bloco = dirEnt.bloco;
 		int tamanhoBloco = getTamanhoBloco(mbr);
@@ -721,7 +726,6 @@ int leBlocos(DIRENT2 dirEnt, char *buffer, int size, Mbr *mbr) {
 			for (i = 0; i < tamanhoBloco - 4; i++) {
 				if (j < tamanhoArquivo) {
 					buffer[j] = bufferBloco[i];
-					printf("%d", buffer[i]);
 					j++;
 				}
 			}
@@ -729,13 +733,16 @@ int leBlocos(DIRENT2 dirEnt, char *buffer, int size, Mbr *mbr) {
 				bloco = getProximoBloco(bufferBloco, mbr);
 			}
 		}
+		result = j;
+	} else {
+		result = -1;
 	}
-	return 1;
+	return result;
 }
 
 int escreve(FILE2 handle, char *buffer, int size, Mbr *mbr) {
 	DIRENT2 dirEnt = getDirEntDoTAAD(handle, mbr);
-	return escreveBlocos(dirEnt, buffer, size, mbr);
+	return escreveBlocos(dirEnt, buffer, size, handle, mbr);
 }
 
 int le(FILE2 handle, char *buffer, int size, Mbr *mbr) {
