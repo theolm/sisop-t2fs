@@ -206,7 +206,8 @@ void commitaMapaBloco(Mbr *mbr) {
 	int tamanhoBloco = getTamanhoBloco(mbr);
 	for (j = 0; j < mbr->numeroBlocosBitmap; j++) {
 		BYTE buffer[tamanhoBloco];
-		for (int i = 0; i < tamanhoBloco; i++) {
+		int i;
+		for (i = 0; i < tamanhoBloco; i++) {
 			buffer[i] = i < mbr->tamanhoBitmap ? mbr->mapaEspaco[j * SECTOR_SIZE + i] : 0;
 		}
 		salvaBloco(j + 1, buffer, mbr);
@@ -247,8 +248,24 @@ int ceil2(float f1){
    return n;
 }
 
-void formataParticao(int setoresPorBloco, Mbr *mbr) {
+int validaDisco(Mbr *mbr) {
+	return ((mbr->setoresPorBloco == 0 || mbr->setoresPorBloco > 1023) && mbr->hash != 22222);
+}
+
+int carregaMbrDisco(Mbr *mbr) {
+	BYTE buffer[SECTOR_SIZE];
+	read_sector(1, buffer);
+	int setoresPorBloco = buffer[3] * 16777216 + buffer[2] * 65536 + buffer[1] * 256 + buffer[0];
+	int validacao = buffer[7] * 16777216 + buffer[6] * 65536 + buffer[5] * 256 + buffer[4];
+	printf("%d", validacao);
+
+	if (validaDisco(mbr)) {
+		printf("Disco não formatado\n");
+		return -1;
+	}
+
 	montaMbr(mbr);
+
 	Particao p;
 	mbr->setoresPorBloco = setoresPorBloco;
 	p = mbr->arrayParticoes[mbr->particao];
@@ -259,6 +276,28 @@ void formataParticao(int setoresPorBloco, Mbr *mbr) {
 	mbr->mapaEspaco = malloc(sizeof(BYTE) * mbr->tamanhoBitmap);
 	mbr->numeroBlocosBitmap = ceil2(mbr->tamanhoBitmap / (mbr->setoresPorBloco * (float) SECTOR_SIZE));
 
+	return 1;
+}
+
+
+int formataParticao(int setoresPorBloco, Mbr *mbr) {
+
+	if (setoresPorBloco == 0 || setoresPorBloco > 1023) {
+		printf("Disco não formatado\n");
+		return -1;
+	}
+
+	montaMbr(mbr);
+	Particao p;
+	mbr->setoresPorBloco = setoresPorBloco;
+	p = mbr->arrayParticoes[mbr->particao];
+	mbr->numeroSetores = p.setorFinal - p.setorInicial;
+	mbr->numeroBlocos = mbr->numeroSetores / mbr->setoresPorBloco;
+
+	mbr->tamanhoBitmap = ceil2(mbr->numeroBlocos / (float) 8);
+	mbr->mapaEspaco = malloc(sizeof(BYTE) * mbr->tamanhoBitmap);
+	mbr->numeroBlocosBitmap = ceil2(mbr->tamanhoBitmap / (mbr->setoresPorBloco * (float) SECTOR_SIZE));
+	mbr->hash = 22222;
 	BYTE buffer[setoresPorBloco * SECTOR_SIZE];
 
 	int i;
@@ -270,26 +309,34 @@ void formataParticao(int setoresPorBloco, Mbr *mbr) {
 		salvaBloco(1 + i, buffer, mbr);
 	}
 
-	buffer[0] = (BYTE) (setoresPorBloco << 24 & 0xFF);
-	buffer[1] = (BYTE) (setoresPorBloco << 16 & 0xFF);
-	buffer[2] = (BYTE) (setoresPorBloco << 8 & 0xFF);
-	buffer[3] = (BYTE) (setoresPorBloco & 0xFF);
+	long spb = setoresPorBloco;
+
+	buffer[0] = (BYTE) (spb >> 24 & 0xFF);
+	buffer[1] = (BYTE) (spb >> 16 & 0xFF);
+	buffer[2] = (BYTE) (spb >> 8 & 0xFF);
+	buffer[3] = (BYTE) (spb & 0xFF);
+
+	buffer[4] = 2;
+	buffer[5] = 2;
+	buffer[6] = 2;
+	buffer[7] = 2;
+	buffer[8] = 2;
 
 	salvaBloco(0, buffer, mbr);
 
 	for (i = 0; i < 1 + mbr->numeroBlocosBitmap; i++) {
 		getBlocoLivreDoBitmap(mbr);
 	}
+
+	return 1;
 }
 
-BYTE *copiaFaixa(BYTE *buffer, int inicio, int fim) {
-	static BYTE b[41];
+void copiaFaixa(BYTE *buffer, BYTE *b, int inicio, int fim) {
 	int i;
 	int deslocamento = 0;
 	for (i = inicio; i < fim; i++) {
 		b[deslocamento++] = buffer[i];
 	}
-	return b;
 }
 
 int getProximoBloco(BYTE *buffer, Mbr *mbr) {
@@ -298,10 +345,11 @@ int getProximoBloco(BYTE *buffer, Mbr *mbr) {
 }
 
 void setProximoBloco(BYTE *buffer, int proximoBloco, int tamanhoBloco) {
-	buffer[tamanhoBloco - 4] = (BYTE) (proximoBloco << 24 & 0xFF);
-	buffer[tamanhoBloco - 3] = (BYTE) (proximoBloco << 16 & 0xFF);
-	buffer[tamanhoBloco - 2] = (BYTE) (proximoBloco << 8 & 0xFF);
-	buffer[tamanhoBloco - 1] = (BYTE) (proximoBloco & 0xFF);
+	long pb = proximoBloco;
+	buffer[tamanhoBloco - 4] = (BYTE) (pb >> 24 & 0xFF);
+	buffer[tamanhoBloco - 3] = (BYTE) (pb >> 16 & 0xFF);
+	buffer[tamanhoBloco - 2] = (BYTE) (pb >> 8 & 0xFF);
+	buffer[tamanhoBloco - 1] = (BYTE) (pb & 0xFF);
 }
 
 DIRENT2 inicializaDirEnt() {
@@ -344,15 +392,18 @@ void desmontaDirEnt(DIRENT2 dirEnt, BYTE *byteDirEnt) {
 	}
 	byteDirEnt[32] = 0;
 
-	byteDirEnt[33] = (BYTE) (dirEnt.fileSize << 24 & 0xFF);
-	byteDirEnt[34] = (BYTE) (dirEnt.fileSize << 16 & 0xFF);
-	byteDirEnt[35] = (BYTE) (dirEnt.fileSize << 8 & 0xFF);
-	byteDirEnt[36] = (BYTE) (dirEnt.fileSize & 0xFF);
+	long tamanho = dirEnt.fileSize;
+	long bloco = dirEnt.bloco;
 
-	byteDirEnt[37] = (BYTE) (dirEnt.bloco << 24 & 0xFF);
-	byteDirEnt[38] = (BYTE) (dirEnt.bloco << 16 & 0xFF);
-	byteDirEnt[39] = (BYTE) (dirEnt.bloco << 8 & 0xFF);
-	byteDirEnt[40] = (BYTE) (dirEnt.bloco & 0xFF);
+	byteDirEnt[33] = (BYTE) ((tamanho >> 24) & 0xFF);
+	byteDirEnt[34] = (BYTE) ((tamanho >> 16) & 0xFF);
+	byteDirEnt[35] = (BYTE) ((tamanho >> 8) & 0xFF);
+	byteDirEnt[36] = (BYTE) (tamanho & 0xFF);
+
+	byteDirEnt[37] = (BYTE) ((bloco >> 24) & 0xFF);
+	byteDirEnt[38] = (BYTE) ((bloco >> 16) & 0xFF);
+	byteDirEnt[39] = (BYTE) ((bloco >> 8) & 0xFF);
+	byteDirEnt[40] = (BYTE) (bloco & 0xFF);
 }
 
 DIRENT2 getEntradaDiretorio(int blocoDiretorio, char *fileName, Mbr *mbr) {
@@ -368,8 +419,8 @@ DIRENT2 getEntradaDiretorio(int blocoDiretorio, char *fileName, Mbr *mbr) {
 		int i = 0;
 		while (dirEntResult.name[0] == 0 && i < entradaDeDiretorios) {
 			if (i != 0 || blocoDiretorio != 0) {
-				BYTE *b;
-				b = copiaFaixa(buffer, i * 41, i * 41 + 41);
+				BYTE b[41];
+				copiaFaixa(buffer, b, i * 41, i * 41 + 41);
 				if (b[0] != 0) {
 					DIRENT2 dirEnt;
 					dirEnt = montaDirEnt(b);
@@ -456,7 +507,11 @@ DIRENT2 getDirEntDoTAAD(int handler, Mbr *mbr) {
 	DIRENT2 dirEnt;
 	dirEnt = inicializaDirEnt();
 	if (mbr->taad[handler].tipo != 0) {
-		dirEnt = mbr->taad[handler].dirEnt;
+		strcpy(dirEnt.name, mbr->taad[handler].dirEnt.name);
+		dirEnt.fileSize = mbr->taad[handler].dirEnt.fileSize;
+		dirEnt.fileType = mbr->taad[handler].dirEnt.fileType;
+		dirEnt.bloco =mbr->taad[handler].dirEnt.bloco;
+		dirEnt.pai = mbr->taad[handler].dirEnt.pai;
 	}
 	return dirEnt;
 }
@@ -466,8 +521,8 @@ int getArrayEntradaDiretorios(int diretorio, DIRENT2 *arrayDirEnt, BYTE *bufferB
 	int i = 0;
 	for (i = 0; i < entradasDeDiretorios; i++) {
 		if (i != 0 || diretorio != 0) {
-			BYTE *b;
-			b = copiaFaixa(bufferBloco, i * 41, i * 41 + 41);
+			BYTE b[41];
+			copiaFaixa(bufferBloco, b, i * 41, i * 41 + 41);
 			arrayDirEnt[i] = montaDirEnt(b);
 		}
 	}
@@ -545,8 +600,8 @@ void addEntradaDiretorio(DIRENT2 dirEntAtualizada, char *fileName, int blocoDire
 		int i = 0;
 		while (!achei && i < entradasDeDiretorios) {
 			if (i != 0 || blocoDiretorio != 0) {
-				BYTE *b;
-				b = copiaFaixa(bufferBloco, i * 41, i * 41 + 41);
+				BYTE b[41];
+				copiaFaixa(bufferBloco, b, i * 41, i * 41 + 41);
 				if (b[0] == 0) {
 					DIRENT2 dirEnt;
 					strcpy(dirEnt.name, dirEntAtualizada.name);
@@ -587,8 +642,8 @@ void setEntradaDiretorio(DIRENT2 dirEntAtualizada, char *fileName, int blocoDire
 
 		while (!terminou && i < entradasDeDiretorios) {
 			if (i != 0 || blocoDiretorio != 0) {
-				BYTE *b;
-				b = copiaFaixa(bufferBloco, i * 41, i * 41 + 41);
+				BYTE b[41];
+				copiaFaixa(bufferBloco, b, i * 41, i * 41 + 41);
 				if (b[0] != 0) {
 					DIRENT2 dirEnt;
 					dirEnt = montaDirEnt(b);
@@ -725,8 +780,7 @@ int leBlocos(DIRENT2 dirEnt, char *buffer, int size, Mbr *mbr) {
 			int i;
 			for (i = 0; i < tamanhoBloco - 4; i++) {
 				if (j < tamanhoArquivo) {
-					buffer[j] = bufferBloco[i];
-					j++;
+					buffer[j++] = bufferBloco[i];
 				}
 			}
 			if (j < tamanhoArquivo) {

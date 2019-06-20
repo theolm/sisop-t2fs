@@ -28,12 +28,14 @@ typedef struct {
 	BYTE *mapaEspaco;
 	Arquivo taad[4096];
 	int indiceHandler;
+	int hash;
 } Mbr;
 
-void formataParticao(int setoresPorBloco, Mbr *mbr);
+int formataParticao(int setoresPorBloco, Mbr *mbr);
 int existeEntradaDiretorio(char *fileName, DIRENT2 *dirEnt, Mbr *mbr);
 int criaEntradaDiretorio(char *fileName, int tipo, Mbr *mbr);
 int adicionaArquivoNoTAAD(DIRENT2 dirEnt, int tipo, Mbr *mbr);
 int removeArquivoDoTAAD(int handler, Mbr *mbr);
 int escreve(FILE2 handle, char *buffer, int size, Mbr *mbr);
 int le(FILE2 handle, char *buffer, int size, Mbr *mbr);
+int validaDisco(Mbr *mbr);

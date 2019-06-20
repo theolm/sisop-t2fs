@@ -16,7 +16,7 @@ int main() {
 
     format2(4);
 
-	/*mkdir2("cardozo");
+	mkdir2("cardozo");
 	mkdir2("/rui/home/documentos");
 	mkdir2("/root/home/downloads");
 	mkdir2("/rui/zanza/kim");
@@ -26,8 +26,8 @@ int main() {
 
 	//selecionar um arquivo real no teu disco
 	//usar arquivo de teste com poucos kbytes ex 80kb
-	char *nomeArquivoOrigem = "/home/felipe/Imagens/teste.txt";
-	char *nomeArquivoDestino= "/home/felipe/Imagens/teste2.txt";
+	char *nomeArquivoOrigem = "/home/felipe/Imagens/047.jpg";
+	char *nomeArquivoDestino= "/home/felipe/Imagens/teste2.jpg";
 
 	FILE2 handle = create2("/rui/home/documentos/foto.jpg");
 
@@ -35,8 +35,7 @@ int main() {
 
 	handle = open2("/rui/home/documentos/foto.jpg");
 
-	//int tamanhoArquivo = 86251;
-	int tamanhoArquivo = 1853;
+	int tamanhoArquivo = 86251;
 	char arquivoOrigem[tamanhoArquivo];
 	char arquivoDestino[tamanhoArquivo];
 
@@ -72,11 +71,5 @@ int main() {
 	}
 	fclose(fptr);
 
-	for (i = 0; i < tamanhoArquivo; i++) {
-		if (arquivoOrigem[i] != arquivoDestino[i]) {
-			printf("[%d] %d %d\n", i, arquivoOrigem[i], arquivoDestino[i]);
-		}
-	}
-*/
     return 0;
 }
