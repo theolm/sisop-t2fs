@@ -400,22 +400,32 @@ DIRENT2 getEntradaDiretorio(int blocoDiretorio, char *fileName, Mbr *mbr) {
 	return dirEntResult;
 }
 
-int existeEntradaDiretorio(char *fileName, DIRENT2 dirEnt, Mbr *mbr) {
+int existeEntradaDiretorio(char *fileName, DIRENT2 *dirEnt, Mbr *mbr) {
 	int result = 1;
 	char arquivo[strlen(fileName)];
 	strcpy(arquivo, fileName);
 	char** arrayPastas = split(arquivo, '/');
-	dirEnt = inicializaDirEnt();
+	DIRENT2 dirEntAux;
+	dirEntAux = inicializaDirEnt();
 
 	int i;
+	int bloco = 0;
 	for (i = 0; result && *(arrayPastas + i) ; i++) {
 		char *p = *(arrayPastas + i);
-		dirEnt = getEntradaDiretorio(dirEnt.bloco, p, mbr);
-		result = dirEnt.name[0] != 0 ? 1 : 0;
+		bloco = dirEntAux.bloco;
+		dirEntAux = getEntradaDiretorio(bloco, p, mbr);
+		result = dirEntAux.name[0] != 0 ? 1 : 0;
 		free(p);
 	}
 
 	free(arrayPastas);
+	if (result) {
+		strcpy(dirEnt->name, dirEntAux.name);
+		dirEnt->bloco = dirEntAux.bloco;
+		dirEnt->fileType = dirEntAux.fileType;
+		dirEnt->fileSize = dirEntAux.fileSize;
+		dirEnt->pai = bloco;
+	}
 	return result;
 }
 
@@ -661,9 +671,42 @@ int criaEntradaDiretorio(char *fileName, int tipo, Mbr *mbr) {
 	return adicionaArquivoNoTAAD(dirEnt, tipo, mbr);
 }
 
-int write(DIRENT2 dirEnt, BYTE *buffer, int size) {
+void apagaCadeiaDeBlocos(int bloco, Mbr *mbr) {
 
-
-	return -1;
 }
 
+int escreveBlocos(DIRENT2 dirEnt, char *buffer, int size, Mbr *mbr) {
+	if (dirEnt.fileType == 2) {
+		if (dirEnt.bloco != 0) {
+			apagaCadeiaDeBlocos(dirEnt.bloco, mbr);
+		}
+		dirEnt.bloco = getBlocoLivreDoBitmap(mbr);
+		dirEnt.fileSize = size;
+		setEntradaDiretorio(dirEnt, dirEnt.name, dirEnt.pai, mbr);
+		int novoBloco = 0;
+		int bloco = dirEnt.bloco;
+		int tamanhoBloco = getTamanhoBloco(mbr);
+		int j = 0;
+		while (j < size) {
+			BYTE bufferBloco[tamanhoBloco];
+			int i;
+			for (i = 0; i < tamanhoBloco; i++) {
+				bufferBloco[i] = j < size ? buffer[j++] : 0;
+			}
+			if (j < size) {
+				novoBloco = getBlocoLivreDoBitmap(mbr);
+				setProximoBloco(bufferBloco, novoBloco, tamanhoBloco);
+			} else {
+				setProximoBloco(bufferBloco, 0, tamanhoBloco);
+			}
+			salvaBloco(bloco, bufferBloco, mbr);
+			bloco = novoBloco;
+		}
+	}
+	return 1;
+}
+
+int escreve(FILE2 handle, char *buffer, int size, Mbr *mbr) {
+	DIRENT2 dirEnt = getDirEntDoTAAD(handle, mbr);
+	return escreveBlocos(dirEnt, buffer, size, mbr);
+}

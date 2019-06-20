@@ -24,21 +24,34 @@ int main() {
 	mkdir2("/rui/zanza/hanna");
 	mkdir2("/rui/zanza/belinha/teste");
 
+	//selecionar um arquivo real no teu disco
+	//usar arquivo de teste com poucos kbytes ex 80kb
+	char *nomeArquivoOrigem = "/home/felipe/Imagens/047.jpg";
+
 	FILE2 handle = create2("/rui/home/documentos/foto.jpg");
 
 	close2(handle);
 
 	handle = open2("/rui/home/documentos/foto.jpg");
 
-	close2(handle);
-
+	int tamanhoArquivo = 86251;
+	char arquivoOrigem[tamanhoArquivo];
 
 	FILE *fptr;
-
-	if ((fptr = fopen("/home/felipe/Imagens/047.jpg","rb")) == NULL){
+	if ((fptr = fopen(nomeArquivoOrigem,"rb")) == NULL){
 		printf("Erro ao abrir arquivo!");
 		exit(1);
 	}
+	int n;
+	int num;
+	for(n = 0; n < tamanhoArquivo; ++n)
+	{
+		fread(&num, sizeof(char), 1, fptr);
+		arquivoOrigem[n] = num;
+	}
+	fclose(fptr);
+
+	write2(handle, arquivoOrigem, tamanhoArquivo);
 
     return 0;
 }
