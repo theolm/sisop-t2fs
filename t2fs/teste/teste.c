@@ -14,12 +14,15 @@ int main() {
         printf("cidentify erro!\n\n");
     }
 
-    int resultado;
-    resultado = format2(4);
+    format2(4);
 
 	mkdir2("/rui/felipe/cardozo");
 	mkdir2("/rui/home/documentos");
 	mkdir2("/root/home/downloads");
+	mkdir2("/rui/zanza/kim");
+	mkdir2("/rui/zanza/belinha");
+	mkdir2("/rui/zanza/hanna");
+	mkdir2("/rui/zanza/belinha/teste");
 
 	FILE2 handle = create2("/rui/home/documentos/foto.jpg");
 
@@ -36,44 +39,6 @@ int main() {
 		printf("Erro ao abrir arquivo!");
 		exit(1);
 	}
-
-
-
-//	int n;
-//	int num;
-//	int tamanhoArquivo = 86251;
-//	char arquivo[tamanhoArquivo];
-//	for(n = 0; n < tamanhoArquivo; ++n)
-//	{
-//		fread(&num, sizeof(char), 1, fptr);
-//		arquivo[n] = num;
-//	}
-//	fclose(fptr);
-//
-//
-//
-//
-//	if ((fptr = fopen("/home/felipe/Imagens/teste.jpg","wb")) == NULL){
-//		printf("Error! opening file");
-//		exit(1);
-//	}
-//
-//	for(n = 0; n < tamanhoArquivo; ++n)
-//	{
-//		num = arquivo[n];
-//		fwrite(&num, sizeof(char), 1, fptr);
-//	}
-//	fclose(fptr);
-
-//	FILE2 file = create2("/rui/home/documento/arquivo.dat");
-
-//	write2(file, arquivo, 5);
-//    printf("\n***TESTE CREATE********************\n\n");
-//	mkdir2("/root/home/documentos/teste.txt");
-//	mkdir2("/root/home/downloads/arquivo.jpg");
-//	mkdir2("/root/home/downloads/outroteste.dat");
-
-
 
     return 0;
 }

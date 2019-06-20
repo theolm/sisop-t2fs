@@ -116,7 +116,7 @@ int mkdir2(char *pathname) {
     FILE2 result = -1;
     DIRENT2 dirEnt;
     if (!existeEntradaDiretorio(pathname, dirEnt, &mbr)) {
-    	criaEntradaDiretorio(pathname, 1, &mbr);
+    	result = criaEntradaDiretorio(pathname, 1, &mbr);
     }
     return result;
 }

@@ -56,7 +56,7 @@ int converteBinParaByte(BYTE *b) {
 		res += pot(2, i) * b[7 - i];
 	}
 
-	return res;
+	return res == 256 ? 255 : res;
 }
 
 char** split(char* str, const char delimitador) {
@@ -220,7 +220,7 @@ int getBlocoLivreDoBitmap(Mbr *mbr) {
 
 	do {
 		b = mbr->mapaEspaco[i];
-	} while (b == -1 && ++i < mbr->tamanhoBitmap);
+	} while (b == 255 && ++i < mbr->tamanhoBitmap);
 
 	if (b != -1) {
 		BYTE bin[8];
@@ -312,6 +312,7 @@ DIRENT2 inicializaDirEnt() {
 	dirEnt.fileSize = 0;
 	dirEnt.fileType = 0;
 	dirEnt.bloco = 0;
+	dirEnt.pai = 0;
 	return dirEnt;
 }
 
@@ -376,6 +377,7 @@ DIRENT2 getEntradaDiretorio(int blocoDiretorio, char *fileName, Mbr *mbr) {
 					dirEnt = montaDirEnt(b);
 					if (strcmp(fileName, dirEnt.name) == 0) {
 						dirEntResult = dirEnt;
+						dirEntResult.pai = blocoDiretorio;
 						terminou = 1;
 					}
 				} else {
@@ -403,11 +405,12 @@ int existeEntradaDiretorio(char *fileName, DIRENT2 dirEnt, Mbr *mbr) {
 	char arquivo[strlen(fileName)];
 	strcpy(arquivo, fileName);
 	char** arrayPastas = split(arquivo, '/');
+	dirEnt = inicializaDirEnt();
 
 	int i;
 	for (i = 0; result && *(arrayPastas + i) ; i++) {
 		char *p = *(arrayPastas + i);
-		dirEnt = getEntradaDiretorio(0, p, mbr);
+		dirEnt = getEntradaDiretorio(dirEnt.bloco, p, mbr);
 		result = dirEnt.name[0] != 0 ? 1 : 0;
 		free(p);
 	}
@@ -436,8 +439,18 @@ int removeArquivoDoTAAD(int handler, Mbr *mbr) {
 	int result = -1;
 	if (mbr->taad[handler].tipo != 0) {
 		mbr->taad[handler].tipo = 0;
+		result = 0;
 	}
 	return result;
+}
+
+DIRENT2 getDirEntDoTAAD(int handler, Mbr *mbr) {
+	DIRENT2 dirEnt;
+	dirEnt = inicializaDirEnt();
+	if (mbr->taad[handler].tipo != 0) {
+		dirEnt = mbr->taad[handler].dirEnt;
+	}
+	return dirEnt;
 }
 
 int getArrayEntradaDiretorios(int diretorio, DIRENT2 *arrayDirEnt, BYTE *bufferBloco, Mbr *mbr, int entradasDeDiretorios) {
@@ -564,14 +577,14 @@ void setEntradaDiretorio(DIRENT2 dirEntAtualizada, char *fileName, int blocoDire
 		carregaBloco(blocoDiretorio, bufferBloco, mbr);
 		int i = 0;
 
-		while (!achei && i < entradasDeDiretorios) {
+		while (!terminou && i < entradasDeDiretorios) {
 			if (i != 0 || blocoDiretorio != 0) {
 				BYTE *b;
 				b = copiaFaixa(bufferBloco, i * 41, i * 41 + 41);
-				if (b[0] == 0) {
+				if (b[0] != 0) {
 					DIRENT2 dirEnt;
 					dirEnt = montaDirEnt(b);
-					if (strcmp(dirEnt.name, fileName)) {
+					if (strcmp(dirEnt.name, fileName) == 0) {
 						strcpy(dirEnt.name, dirEntAtualizada.name);
 						dirEnt.fileType = dirEntAtualizada.fileType;
 						dirEnt.fileSize = dirEntAtualizada.fileSize;
@@ -618,9 +631,10 @@ DIRENT2 criaEntradaDiretorioEfetivo(char **arrayPastas, int tipo, Mbr *mbr) {
 
 		if (dirEnt.name[0] == 0) {
 			strcpy(dirEnt.name, s);
-			dirEnt.fileType = *(arrayPastas + i + 1) ? tipo : 1;
+			dirEnt.fileType = *(arrayPastas + i + 1) ? 1 : tipo;
 			dirEnt.bloco = *(arrayPastas + i + 1) ? getBlocoLivreDoBitmap(mbr) : 0;
 			dirEnt.fileSize = 0;
+			dirEnt.pai = bloco;
 			addEntradaDiretorio(dirEnt, s, bloco, mbr);
 			bloco = dirEnt.bloco;
 		} else {
@@ -628,6 +642,7 @@ DIRENT2 criaEntradaDiretorioEfetivo(char **arrayPastas, int tipo, Mbr *mbr) {
 				dirEnt.bloco = getBlocoLivreDoBitmap(mbr);
 				setEntradaDiretorio(dirEnt, dirEnt.name, bloco, mbr);
 			}
+			dirEnt.pai = bloco;
 			bloco = dirEnt.bloco;
 		}
 

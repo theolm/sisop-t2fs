@@ -15,7 +15,7 @@ typedef unsigned int DWORD;
 #pragma pack(push, 1)
 
 /** Registro com as informações da entrada de diretório, lida com readdir2 */
-#define MAX_FILE_NAME_SIZE 41
+#define MAX_FILE_NAME_SIZE 31
 #define TAMANHO_MAXIMO_NOME_PARTICAO 24
 
 typedef struct {
@@ -23,6 +23,7 @@ typedef struct {
     BYTE fileType;                   /* Tipo do arquivo: regular (0x01) ou diretório (0x02) */
     DWORD fileSize;                  /* Numero de bytes do arquivo                          */
     DWORD bloco;					 /* Ponteiro para bloco de dados  */
+    DWORD pai;						 /* Ponteiro temporário para referenciar o bloco onde a struct está armazenada*/
 } DIRENT2;
 
 #pragma pack(pop)
