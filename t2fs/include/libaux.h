@@ -36,3 +36,4 @@ int criaEntradaDiretorio(char *fileName, int tipo, Mbr *mbr);
 int adicionaArquivoNoTAAD(DIRENT2 dirEnt, int tipo, Mbr *mbr);
 int removeArquivoDoTAAD(int handler, Mbr *mbr);
 int escreve(FILE2 handle, char *buffer, int size, Mbr *mbr);
+int le(FILE2 handle, char *buffer, int size, Mbr *mbr);

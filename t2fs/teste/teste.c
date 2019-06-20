@@ -16,7 +16,7 @@ int main() {
 
     format2(4);
 
-	mkdir2("/rui/felipe/cardozo");
+	/*mkdir2("cardozo");
 	mkdir2("/rui/home/documentos");
 	mkdir2("/root/home/downloads");
 	mkdir2("/rui/zanza/kim");
@@ -26,7 +26,8 @@ int main() {
 
 	//selecionar um arquivo real no teu disco
 	//usar arquivo de teste com poucos kbytes ex 80kb
-	char *nomeArquivoOrigem = "/home/felipe/Imagens/047.jpg";
+	char *nomeArquivoOrigem = "/home/felipe/Imagens/teste.txt";
+	char *nomeArquivoDestino= "/home/felipe/Imagens/teste2.txt";
 
 	FILE2 handle = create2("/rui/home/documentos/foto.jpg");
 
@@ -34,24 +35,48 @@ int main() {
 
 	handle = open2("/rui/home/documentos/foto.jpg");
 
-	int tamanhoArquivo = 86251;
+	//int tamanhoArquivo = 86251;
+	int tamanhoArquivo = 1853;
 	char arquivoOrigem[tamanhoArquivo];
+	char arquivoDestino[tamanhoArquivo];
 
 	FILE *fptr;
 	if ((fptr = fopen(nomeArquivoOrigem,"rb")) == NULL){
 		printf("Erro ao abrir arquivo!");
 		exit(1);
 	}
-	int n;
+	int i;
 	int num;
-	for(n = 0; n < tamanhoArquivo; ++n)
-	{
+	for(i = 0; i < tamanhoArquivo; ++i) {
 		fread(&num, sizeof(char), 1, fptr);
-		arquivoOrigem[n] = num;
+		arquivoOrigem[i] = num;
 	}
 	fclose(fptr);
 
 	write2(handle, arquivoOrigem, tamanhoArquivo);
 
+	close2(handle);
+
+	handle = open2("/rui/home/documentos/foto.jpg");
+
+	read2(handle, arquivoDestino, tamanhoArquivo);
+
+	if ((fptr = fopen(nomeArquivoDestino,"wb")) == NULL){
+		printf("Error! opening file");
+		exit(1);
+	}
+
+	for(i = 0; i < tamanhoArquivo; ++i)	{
+		num = arquivoDestino[i];
+		fwrite(&num, sizeof(char), 1, fptr);
+	}
+	fclose(fptr);
+
+	for (i = 0; i < tamanhoArquivo; i++) {
+		if (arquivoOrigem[i] != arquivoDestino[i]) {
+			printf("[%d] %d %d\n", i, arquivoOrigem[i], arquivoDestino[i]);
+		}
+	}
+*/
     return 0;
 }

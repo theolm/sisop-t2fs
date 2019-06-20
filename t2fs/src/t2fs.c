@@ -47,6 +47,8 @@ FILE2 create2(char *filename) {
     DIRENT2 dirEnt;
     if (!existeEntradaDiretorio(filename, &dirEnt, &mbr)) {
     	handle = criaEntradaDiretorio(filename, 2, &mbr);
+    } else {
+
     }
     return handle;
 }
@@ -82,7 +84,7 @@ Função:	Função usada para realizar a leitura de uma certa quantidade
 		de bytes (size) de um arquivo.
 -----------------------------------------------------------------------------*/
 int read2(FILE2 handle, char *buffer, int size) {
-    return -1;
+    return le(handle, buffer, size, &mbr);
 }
 
 /*-----------------------------------------------------------------------------

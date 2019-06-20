@@ -280,8 +280,6 @@ void formataParticao(int setoresPorBloco, Mbr *mbr) {
 	for (i = 0; i < 1 + mbr->numeroBlocosBitmap; i++) {
 		getBlocoLivreDoBitmap(mbr);
 	}
-
-	imprimeMbr(mbr);
 }
 
 BYTE *copiaFaixa(BYTE *buffer, int inicio, int fim) {
@@ -676,6 +674,7 @@ void apagaCadeiaDeBlocos(int bloco, Mbr *mbr) {
 }
 
 int escreveBlocos(DIRENT2 dirEnt, char *buffer, int size, Mbr *mbr) {
+	int result;
 	if (dirEnt.fileType == 2) {
 		if (dirEnt.bloco != 0) {
 			apagaCadeiaDeBlocos(dirEnt.bloco, mbr);
@@ -690,7 +689,7 @@ int escreveBlocos(DIRENT2 dirEnt, char *buffer, int size, Mbr *mbr) {
 		while (j < size) {
 			BYTE bufferBloco[tamanhoBloco];
 			int i;
-			for (i = 0; i < tamanhoBloco; i++) {
+			for (i = 0; i < tamanhoBloco - 4; i++) {
 				bufferBloco[i] = j < size ? buffer[j++] : 0;
 			}
 			if (j < size) {
@@ -702,6 +701,34 @@ int escreveBlocos(DIRENT2 dirEnt, char *buffer, int size, Mbr *mbr) {
 			salvaBloco(bloco, bufferBloco, mbr);
 			bloco = novoBloco;
 		}
+		result = j;
+	} else {
+		result = -1;
+	}
+	return result;
+}
+
+int leBlocos(DIRENT2 dirEnt, char *buffer, int size, Mbr *mbr) {
+	if (dirEnt.fileType == 2) {
+		int bloco = dirEnt.bloco;
+		int tamanhoBloco = getTamanhoBloco(mbr);
+		int tamanhoArquivo = dirEnt.fileSize;
+		int j = 0;
+		while (j < tamanhoArquivo) {
+			BYTE bufferBloco[tamanhoBloco];
+			carregaBloco(bloco, bufferBloco, mbr);
+			int i;
+			for (i = 0; i < tamanhoBloco - 4; i++) {
+				if (j < tamanhoArquivo) {
+					buffer[j] = bufferBloco[i];
+					printf("%d", buffer[i]);
+					j++;
+				}
+			}
+			if (j < tamanhoArquivo) {
+				bloco = getProximoBloco(bufferBloco, mbr);
+			}
+		}
 	}
 	return 1;
 }
@@ -709,4 +736,9 @@ int escreveBlocos(DIRENT2 dirEnt, char *buffer, int size, Mbr *mbr) {
 int escreve(FILE2 handle, char *buffer, int size, Mbr *mbr) {
 	DIRENT2 dirEnt = getDirEntDoTAAD(handle, mbr);
 	return escreveBlocos(dirEnt, buffer, size, mbr);
+}
+
+int le(FILE2 handle, char *buffer, int size, Mbr *mbr) {
+	DIRENT2 dirEnt = getDirEntDoTAAD(handle, mbr);
+	return leBlocos(dirEnt, buffer, size, mbr);
 }
