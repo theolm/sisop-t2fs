@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 int main() {
-    printf("\nTESTE de main\n");
+    /*printf("\nTESTE de main\n");
 
     char members[100];
 
@@ -69,7 +69,11 @@ int main() {
 		num = arquivoDestino[i];
 		fwrite(&num, sizeof(char), 1, fptr);
 	}
-	fclose(fptr);
+	fclose(fptr);*/
+
+	create2("/rui/zanza/belinha/teste/arquivo");
+
+
 
     return 0;
 }

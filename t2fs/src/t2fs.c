@@ -43,8 +43,8 @@ Função:	Função usada para criar um novo arquivo no disco e abrí-lo,
 		assumirá um tamanho de zero bytes.
 -----------------------------------------------------------------------------*/
 FILE2 create2(char *filename) {
-	if(validaDisco(&mbr)){
-		printf("\nFOIII\n");
+	if (mbr.hash != 22222) {
+		carregaMbrDisco(&mbr);
 	}
 
     FILE2 handle = -1;

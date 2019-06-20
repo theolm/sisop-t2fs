@@ -29,6 +29,7 @@ typedef struct {
 	Arquivo taad[4096];
 	int indiceHandler;
 	int hash;
+	int validacao;
 } Mbr;
 
 int formataParticao(int setoresPorBloco, Mbr *mbr);
@@ -39,3 +40,4 @@ int removeArquivoDoTAAD(int handler, Mbr *mbr);
 int escreve(FILE2 handle, char *buffer, int size, Mbr *mbr);
 int le(FILE2 handle, char *buffer, int size, Mbr *mbr);
 int validaDisco(Mbr *mbr);
+int carregaMbrDisco(Mbr *mbr);
