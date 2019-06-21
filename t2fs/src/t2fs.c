@@ -245,7 +245,14 @@ int readdir2(DIR2 handle, DIRENT2 *dentry) {
 Função:	Função usada para fechar um diretório.
 -----------------------------------------------------------------------------*/
 int closedir2(DIR2 handle) {
-    return -1;
+	if (mbr.hash != 22222) {
+		int erro = carregaMbrDisco(&mbr);
+		if (erro == -1) {
+			return -1;
+		}
+	}
+
+    return removeArquivoDoTAAD(handle, &mbr);
 }
 
 /*-----------------------------------------------------------------------------

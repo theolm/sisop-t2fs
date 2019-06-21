@@ -590,14 +590,10 @@ int buscaDirEntPorBloco(DIRENT2 *dirEnt, int bloco, BYTE *bufferBloco, Mbr *mbr,
 	int terminei = 0;
 	int proximoBloco;
 
+
 	do {
 		DIRENT2 arrayDirEnt[entradasDeDiretorios];
 		proximoBloco = getArrayEntradaDiretorios(bloco, arrayDirEnt, bufferBloco, mbr, entradasDeDiretorios);
-
-		int i;
-		for (i = 0; i < entradasDeDiretorios; i++) {
-
-		}
 
 
 		if (!terminei) {
