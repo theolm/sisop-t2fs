@@ -175,7 +175,30 @@ int rmdir2(char *pathname) {
 Função:	Função usada para alterar o CP (current path)
 -----------------------------------------------------------------------------*/
 int chdir2(char *pathname) {
-    return -1;
+	if (mbr.hash != 22222) {
+		int erro = carregaMbrDisco(&mbr);
+		if (erro == -1) {
+			return -1;
+		}
+	}
+
+	int result = -1;
+
+	if (strcmp(pathname, "/")) {
+		mbr.currentPath.fileSize = 0;
+	}
+
+	DIRENT2 dirEnt;
+    if (existeEntradaDiretorio(pathname, &dirEnt, &mbr)) {
+    	strcpy(mbr.currentPath.name, dirEnt.name);
+    	mbr.currentPath.fileSize = dirEnt.fileSize;
+    	mbr.currentPath.fileType = dirEnt.fileType;
+    	mbr.currentPath.bloco = dirEnt.bloco;
+    	mbr.currentPath.pai = dirEnt.pai;
+    	result = 1;
+    }
+
+    return result;
 }
 
 /*-----------------------------------------------------------------------------
@@ -198,7 +221,7 @@ DIR2 opendir2(char *pathname) {
 
 	DIR2 dir;
     DIRENT2 dirEnt;
-    if (!existeEntradaDiretorio(pathname, &dirEnt, &mbr)) {
+    if (existeEntradaDiretorio(pathname, &dirEnt, &mbr)) {
     	dir = adicionaArquivoNoTAAD(dirEnt, 1, &mbr);
     }
     return dir;
@@ -208,7 +231,14 @@ DIR2 opendir2(char *pathname) {
 Função:	Função usada para ler as entradas de um diretório.
 -----------------------------------------------------------------------------*/
 int readdir2(DIR2 handle, DIRENT2 *dentry) {
-    return -1;
+	/*DIRENT2 dirEnt = getDirEntDoTAAD(handle, mbr);
+	DIRENT2 dirEntAux;
+	int tamanhoBloco = getTamanhoBloco;
+	BYTE buffer[tamanhoBloco];
+	carregaBloco(dirEnt.bloco, buffer, mbr);
+	buscaDirEnt(dirEntAux, dirEnt.bloco, buffer, &mbr, tamanhoBloco);*/
+	return -1;
+
 }
 
 /*-----------------------------------------------------------------------------

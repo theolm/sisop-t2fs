@@ -118,6 +118,7 @@ void montaMbr(Mbr *mbr) {
 	mbr->inicioTabelaParticoes = buffer[5] * SECTOR_SIZE + buffer[4];
 	mbr->qteParticoes = buffer[7] * SECTOR_SIZE + buffer[6];
 	mbr->arrayParticoes = malloc(sizeof(Particao) * mbr->qteParticoes);
+	mbr->currentPath.fileType = 0;
 
 	int deslocamento = mbr->inicioTabelaParticoes;
 	int i;
@@ -584,6 +585,35 @@ int buscaDirEnt(DIRENT2 *dirEnt, int bloco, char *s, BYTE *bufferBloco, Mbr *mbr
 	return proximoBloco;
 }
 
+int buscaDirEntPorBloco(DIRENT2 *dirEnt, int bloco, BYTE *bufferBloco, Mbr *mbr, int tamanhoBloco) {
+	int entradasDeDiretorios = (tamanhoBloco - 4) / 41;
+	int terminei = 0;
+	int proximoBloco;
+
+	do {
+		DIRENT2 arrayDirEnt[entradasDeDiretorios];
+		proximoBloco = getArrayEntradaDiretorios(bloco, arrayDirEnt, bufferBloco, mbr, entradasDeDiretorios);
+
+		int i;
+		for (i = 0; i < entradasDeDiretorios; i++) {
+
+		}
+
+
+		if (!terminei) {
+			if (proximoBloco == 0) {
+				terminei = 1;
+			} else {
+				bloco = proximoBloco;
+				carregaBloco(bloco, bufferBloco, mbr);
+			}
+		}
+
+	} while (!terminei);
+	return proximoBloco;
+}
+
+
 void salvaEntDir(DIRENT2 dirEnt, BYTE *buffer, int blocoDiretorio, int posicao, Mbr *mbr) {
 	BYTE byteDirEnt[41];
 	desmontaDirEnt(dirEnt, byteDirEnt);
@@ -710,6 +740,39 @@ DIRENT2 criaEntradaDiretorioEfetivo(char **arrayPastas, int tipo, Mbr *mbr) {
 				dirEnt.bloco = getBlocoLivreDoBitmap(mbr);
 				setEntradaDiretorio(dirEnt, dirEnt.name, bloco, mbr);
 			}
+			dirEnt.pai = bloco;
+			bloco = dirEnt.bloco;
+		}
+
+	}
+
+	return dirEnt;
+}
+
+DIRENT2 carregaPastas(char **arrayPastas, int tipo, Mbr *mbr) {
+	DIRENT2 dirEnt;
+	dirEnt = inicializaDirEnt();
+	int bloco = 0;
+	int proximoBloco;
+	int tamanhoBloco = getTamanhoBloco(mbr);
+	BYTE bufferBloco[tamanhoBloco];
+
+	int i;
+	for (i = 0; *(arrayPastas + i); i++) {
+
+		char *s = *(arrayPastas + i);
+
+		do {
+			dirEnt = inicializaDirEnt();
+			carregaBloco(bloco, bufferBloco, mbr);
+			proximoBloco = buscaDirEnt(&dirEnt, bloco, s, bufferBloco, mbr, tamanhoBloco);
+		} while (dirEnt.name[0] == 0 && proximoBloco > 0);
+
+		if (dirEnt.name[0] != 0) {
+			strcpy(dirEnt.name, s);
+			dirEnt.fileType = *(arrayPastas + i + 1) ? 1 : tipo;
+			dirEnt.bloco = *(arrayPastas + i + 1) ? getBlocoLivreDoBitmap(mbr) : 0;
+			dirEnt.fileSize = 0;
 			dirEnt.pai = bloco;
 			bloco = dirEnt.bloco;
 		}

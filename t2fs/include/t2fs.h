@@ -270,7 +270,6 @@ Sa�da:	Se a opera��o foi realizada com sucesso, a fun��o retorna "0" (
 -----------------------------------------------------------------------------*/
 int readdir2 (DIR2 handle, DIRENT2 *dentry);
 
-
 /*-----------------------------------------------------------------------------
 Fun��o:	Fecha o diret�rio identificado pelo par�metro "handle".
 

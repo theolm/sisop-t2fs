@@ -71,11 +71,7 @@ int main() {
 	}
 	fclose(fptr);*/
 
-
-
-	create2("/rui/zanza/belinha/teste/arquivo");
-
-
+	opendir2("pasta");
 
     return 0;
 }

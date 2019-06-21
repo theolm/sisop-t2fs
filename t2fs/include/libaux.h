@@ -30,6 +30,8 @@ typedef struct {
 	int indiceHandler;
 	int hash;
 	int validacao;
+	DIRENT2 currentPath;
+
 } Mbr;
 
 int formataParticao(int setoresPorBloco, Mbr *mbr);

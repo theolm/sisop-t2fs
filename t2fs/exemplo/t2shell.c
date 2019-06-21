@@ -506,7 +506,6 @@ void teste(int tstNumber) {
 	}
 }
 
-
 int main()
 {
     char cmd[256];
