@@ -44,7 +44,10 @@ Função:	Função usada para criar um novo arquivo no disco e abrí-lo,
 -----------------------------------------------------------------------------*/
 FILE2 create2(char *filename) {
 	if (mbr.hash != 22222) {
-		carregaMbrDisco(&mbr);
+		int erro = carregaMbrDisco(&mbr);
+		if (erro == -1) {
+			return -1;
+		}
 	}
 
     FILE2 handle = -1;
@@ -68,6 +71,13 @@ int delete2(char *filename) {
 Função:	Função que abre um arquivo existente no disco.
 -----------------------------------------------------------------------------*/
 FILE2 open2(char *filename) {
+	if (mbr.hash != 22222) {
+		int erro = carregaMbrDisco(&mbr);
+		if (erro == -1) {
+			return -1;
+		}
+	}
+
 	FILE2 handle = -1;
 	DIRENT2 dirEnt;
 	if (existeEntradaDiretorio(filename, &dirEnt, &mbr)) {
@@ -80,6 +90,13 @@ FILE2 open2(char *filename) {
 Função:	Função usada para fechar um arquivo.
 -----------------------------------------------------------------------------*/
 int close2(FILE2 handle) {
+	if (mbr.hash != 22222) {
+		int erro = carregaMbrDisco(&mbr);
+		if (erro == -1) {
+			return -1;
+		}
+	}
+
     return removeArquivoDoTAAD(handle, &mbr);
 }
 
@@ -88,6 +105,13 @@ Função:	Função usada para realizar a leitura de uma certa quantidade
 		de bytes (size) de um arquivo.
 -----------------------------------------------------------------------------*/
 int read2(FILE2 handle, char *buffer, int size) {
+	if (mbr.hash != 22222) {
+		int erro = carregaMbrDisco(&mbr);
+		if (erro == -1) {
+			return -1;
+		}
+	}
+
     return le(handle, buffer, size, &mbr);
 }
 
@@ -96,6 +120,12 @@ Função:	Função usada para realizar a escrita de uma certa quantidade
 		de bytes (size) de  um arquivo.
 -----------------------------------------------------------------------------*/
 int write2(FILE2 handle, char *buffer, int size) {
+	if (mbr.hash != 22222) {
+		int erro = carregaMbrDisco(&mbr);
+		if (erro == -1) {
+			return -1;
+		}
+	}
     return escreve(handle, buffer, size, &mbr);
 }
 
@@ -119,6 +149,13 @@ int seek2(FILE2 handle, DWORD offset) {
 Função:	Função usada para criar um novo diretório.
 -----------------------------------------------------------------------------*/
 int mkdir2(char *pathname) {
+	if (mbr.hash != 22222) {
+		int erro = carregaMbrDisco(&mbr);
+		if (erro == -1) {
+			return -1;
+		}
+	}
+
     FILE2 result = -1;
     DIRENT2 dirEnt;
     if (!existeEntradaDiretorio(pathname, &dirEnt, &mbr)) {
@@ -152,7 +189,19 @@ int getcwd2(char *pathname, int size) {
 Função:	Função que abre um diretório existente no disco.
 -----------------------------------------------------------------------------*/
 DIR2 opendir2(char *pathname) {
-    return -1;
+	if (mbr.hash != 22222) {
+		int erro = carregaMbrDisco(&mbr);
+		if (erro == -1) {
+			return -1;
+		}
+	}
+
+	DIR2 dir;
+    DIRENT2 dirEnt;
+    if (!existeEntradaDiretorio(pathname, &dirEnt, &mbr)) {
+    	dir = adicionaArquivoNoTAAD(dirEnt, 1, &mbr);
+    }
+    return dir;
 }
 
 /*-----------------------------------------------------------------------------

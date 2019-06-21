@@ -248,7 +248,7 @@ int ceil2(float f1){
    return n;
 }
 
-int validaDisco(Mbr *mbr) {
+int validaFormatacao(Mbr *mbr) {
 	return ((mbr->setoresPorBloco == 0 || mbr->setoresPorBloco > 1023) && mbr->hash != 2222 && mbr->validacao != 33686018);
 }
 
@@ -256,10 +256,10 @@ int carregaMbrDisco(Mbr *mbr) {
 	BYTE buffer[SECTOR_SIZE];
 	read_sector(1, buffer);
 	int setoresPorBloco = buffer[0] * 16777216 + buffer[1] * 65536 + buffer[2] * 256 + buffer[3];
+
 	int validacao = buffer[4] * 16777216 + buffer[5] * 65536 + buffer[6] * 256 + buffer[7];
-	printf("%d", validacao);
 	mbr->validacao = validacao;
-	if (validaDisco(mbr)) {
+	if (validaFormatacao(mbr)) {
 		printf("Disco não formatado\n");
 		return -1;
 	}
@@ -282,7 +282,6 @@ int carregaMbrDisco(Mbr *mbr) {
 	for (i = 0; i < mbr->tamanhoBitmap; i++) {
 		mbr->mapaEspaco[i] = bufferBloco[i];
 	}
-
 	return 1;
 }
 
